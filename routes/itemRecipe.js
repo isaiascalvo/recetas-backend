@@ -35,6 +35,15 @@ router.get('/otro/:id', (req, res, next) => {
         .catch(next);   
 });
 
+//Listar todos los itemRecipes
+router.get('/', (req, res, next) => {
+    ItemRecipe.find({})
+        .then(itemRecipes => {
+            if (!itemRecipes) { return res.sendStatus(401); }
+            return res.json({ 'itemRecipes': itemRecipes })
+        })
+});
+
 //Listar un itemRecipes
 router.get('/:id', (req, res, next) => {
     let id = req.params.id;

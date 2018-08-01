@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 var itemRecipeSchema= new mongoose.Schema({
-  quantity: {type:Number,required:true},
+  quantity: {type:String,required:true},
   ingredient: { type: mongoose.Schema.Types.ObjectId, ref: 'ingredient', required: true },
   recipe: { type: mongoose.Schema.Types.ObjectId, ref: 'recipe', required: true },
 

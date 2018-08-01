@@ -21,6 +21,15 @@ router.post('/', (req, res, next) => {
     })
 });
 
+//Listar todas las Categorías
+router.get('/', (req, res, next) => {
+    Category.find({})
+        .then(categories => {
+            if (!categories) { return res.sendStatus(401); }
+            return res.json({ 'categories': categories })
+        })
+});
+
 //Buscar una Categoría por id
 router.get('/:id', (req, res, next) => {
     let id = req.params.id;

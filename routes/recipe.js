@@ -49,10 +49,11 @@ router.get('/', (req, res, next) => {
         .populate( 'creator' )
         .populate( 'category' )
         .populate( { path: 'items', populate: { path: 'ingredient'}})
-            .exec(function (err, recipes) {
-                return res.json({ 'recipes': recipes })
-            })                
-    .catch(next);
+        .then(recipes => {
+            if(!recipes) { return res.sendStatus(401); }
+            return res.json({ 'recipes': recipes });
+        })
+        .catch(next);
    
 });
 
