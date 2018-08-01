@@ -12,7 +12,7 @@ app.use(cors());
 app.set('port' , process.env.PORT || 7575);
 app.use(express.json());
 
-mongoose.connect('mongodb://localhost:27017/F5Gol');
+mongoose.connect('mongodb://localhost:27017/Recetas');
 mongoose.set('debug',true);
 
 require('./models/sportComplex.js');
