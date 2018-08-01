@@ -15,9 +15,12 @@ app.use(express.json());
 mongoose.connect('mongodb://localhost:27017/Recetas');
 mongoose.set('debug',true);
 
-require('./models/sportComplex.js');
 require('./models/user.js');
-require('./models/reservation.js');
+require('./models/recipe.js');
+require('./models/category.js');
+require('./models/ingredient.js');
+require('./models/itemRecipe.js');
+require('./models/votation.js');
 
 //Routes
 app.use(require('./routes'));
