@@ -38,6 +38,7 @@ router.post('/', (req, res, next) => {
 //Listar todos los usuario
 router.get('/', (req, res, next) => {
     User.find({})
+        .populate( 'favorites' )
         .then(users => {
             if(!users) { return res.sendStatus(401); }
             return res.json({ 'users': users });
@@ -49,6 +50,7 @@ router.get('/', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
     let id = req.params.id;
     User.findById(id)
+        .populate( 'favorites' )
         .then(user => {
             if (!user) { return res.sendStatus(401); }
             return res.json({ 'user': user })
@@ -65,6 +67,7 @@ router.post('/log', (req, res, next) => {
 });
 
 //Modificar usuario
+//falta modificar recetas favoritas
 router.put('/:id', (req, res, next) => {
     User.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, function (err, user) {
         if (err)
