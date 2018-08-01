@@ -8,4 +8,4 @@ var votationSchema= new mongoose.Schema({
 },{timestamps:true});
 
 votationSchema.set('toJSON', {getters: true, virtuals: true});
-mongoose.model('ingredient', votationSchema);
+mongoose.model('votation', votationSchema);
