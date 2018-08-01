@@ -1,6 +1,9 @@
 var mongoose = require('mongoose');
 var router = require('express').Router();
 var Ingredient = mongoose.model('ingredient');
+var ItemRecipe = mongoose.model('itemRecipe');
+
+
 
 //Alta de Ingredientes
 router.post('/', (req, res, next) => {
@@ -37,7 +40,7 @@ router.get('/:id', (req, res, next) => {
         })
 });
 
-//Buscar una Ingrediente por nombre
+//Buscar un Ingrediente por nombre
 router.get('/byName/:name', (req, res, next) => {
     let name = req.params.name;
     Ingredient.findOne(name)
@@ -60,13 +63,26 @@ router.put('/:id', (req, res, next) => {
 
 //Baja de Ingrediente indicando el id
 router.delete('/:id', (req, res, next) => {
-    Ingredient.findByIdAndRemove(req.params.id, (err, ingredient) => {
-        let response = {
-            message: "Ingredient successfully deleted",
-            id: ingredient._id,
-        };
-        res.status(200).send(response);
-    });
+    ItemRecipe.find({ingredient:req.params.id},(err, itemRecipes) => {
+        if(!itemRecipes)
+        {
+            Ingredient.findByIdAndRemove(req.params.id, (err, ingredient) => {
+                let response = {
+                    message: "Ingredient successfully deleted",
+                    id: ingredient._id,
+                };
+                res.status(200).send(response);
+            });
+        }
+        else
+        {
+            let response = {
+                message: "Error. The Item has not been deleted because there are many items that contain it.",
+            };
+            res.status(409).send(response);
+        }
+    })
+    
 });
 
 module.exports = router;

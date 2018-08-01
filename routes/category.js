@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var router = require('express').Router();
 var Category = mongoose.model('category');
+var Recipe = mongoose.model('recipe');
 
 //Alta de Categorías
 router.post('/', (req, res, next) => {
@@ -31,6 +32,7 @@ router.get('/:id', (req, res, next) => {
 });
 
 //Buscar una Categoría por nombre
+//no creo que se use, pero lo dejo por las dudas
 router.get('/byName/:name', (req, res, next) => {
     let name = req.params.name;
     Category.findOne(name)
@@ -53,13 +55,25 @@ router.put('/:id', (req, res, next) => {
 
 //Baja de Categoría indicando el id
 router.delete('/:id', (req, res, next) => {
-    Category.findByIdAndRemove(req.params.id, (err, category) => {
-        let response = {
-            message: "Category successfully deleted",
-            id: category._id,
-        };
-        res.status(200).send(response);
-    });
+    Recipe.find({category:req.params.id},(err, recipes) => {
+        if(!recipes)
+        {
+            Category.findByIdAndRemove(req.params.id, (err, category) => {
+                let response = {
+                    message: "Category successfully deleted",
+                    id: category._id,
+                };
+                res.status(200).send(response);
+            });
+        }
+        else
+        {
+            let response = {
+                message: "Error. The Category has not been removed because there are many Recipes belong to it.",
+            };
+            res.status(409).send(response);
+        }
+    })
 });
 
 module.exports = router;

@@ -1,6 +1,8 @@
 var mongoose = require('mongoose');
 var router = require('express').Router();
 var Recipe = mongoose.model('recipe');
+var ItemRecipe = mongoose.model('itemRecipe');
+
 
 //Alta de Recetas
 router.post('/', (req, res, next) => {
@@ -89,7 +91,7 @@ router.get('/byCategory/:category', (req, res, next) => {
     .then(category => {
         if (!category) 
         { 
-            return res.sendStatus(401); 
+            return res.sendStatus(401);//la categoría no se encontró 
         }
         else
         {
@@ -122,24 +124,48 @@ router.get('/:id', (req, res, next) => {
 //Modificar una receta
 //falta acomodar
 router.put('/:id', (req, res, next) => {
+    /* Lo comento porque no se si será necesario
+    //si desea modificar los items
+    if(req.body.items)
+    {
+
+    }
+    else
+    {
+
+    }
+    */
     Recipe.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, function (err, recipe) {
         if (err)
             res.send(err);
         res.json(recipe);
     });
     //res.send("Recipe updated");
-
 });
 
 //Baja de Receta indicando el id
 router.delete('/:id', (req, res, next) => {
-    Recipe.findByIdAndRemove(req.params.id, (err, recipe) => {
-        let response = {
-            message: "Recipe successfully deleted",
-            id: recipe._id
-        };
-        res.status(200).send(response);
-    });
+    //borra los items de la receta
+    ItemRecipe.deleteMany({recipe:req.params.id}, (err, itemRecipe) => {
+        if(err)
+        {
+            let response = {
+                message: "Error. The Recipe has not been deleted because there was an error when deleting their items.",
+                id: recipe._id
+            };
+            res.status(409).send(response);
+        }
+        else
+        {
+            Recipe.findByIdAndRemove(req.params.id, (err, recipe) => {
+                let response = {
+                    message: "Recipe successfully deleted",
+                    id: recipe._id
+                };
+                res.status(200).send(response);
+            });
+        }
+    });        
 });
 
 module.exports = router;

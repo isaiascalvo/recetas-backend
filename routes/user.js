@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var router = require('express').Router();
 var User = mongoose.model('user');
+var Recipe = mongoose.model('recipe');
 
 
 //Crear un usuario
@@ -78,13 +79,26 @@ router.put('/:id', (req, res, next) => {
 
 //Eliminar usuario.
 router.delete('/:id', (req, res, next) => {
-    User.findByIdAndRemove(req.params.id, (err, user) => {
-    let response = {
-        message: "User successfully deleted",
-        id: user._id
-    };
-    res.status(200).send(response);
-    });
+    Recipe.find({creator:req.params.id},(err, recipes) => {
+        if(!recipes)
+        {
+            User.findByIdAndRemove(req.params.id, (err, user) => {
+                let response = {
+                    message: "User successfully deleted",
+                    id: user._id
+                };
+                res.status(200).send(response);
+                }
+            );
+        }
+        else
+        {
+            let response = {
+                message: "Error. The user has not been eliminated because there are many recipes that belong to him.",
+            };
+            res.status(409).send(response);
+        }
+    })
 });
 
 module.exports = router;
