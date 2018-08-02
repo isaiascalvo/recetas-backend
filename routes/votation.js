@@ -32,10 +32,10 @@ router.post('/', (req, res, next) => {
                 })
         
                 //No se si anda
-                Recipe.findOneAndUpdate({ _id: recipe }, {$inc:{votes: 1}, $inc:{punctuation: punctuation} }, { new: true }, function (err, recipe) {
+                Recipe.findOneAndUpdate({ _id: req.body.recipe }, {$inc:{votes: 1, punctuation: req.body.points} }, { new: true }, function (err, recipe) {
                     if (err)
                         res.send(err);
-                    res.json(recipe);
+                    //res.json(recipe);
                 });
             }
             else
@@ -48,10 +48,10 @@ router.post('/', (req, res, next) => {
                     res.json(votation2);
                 });
                 //No se si anda
-                Recipe.findOneAndUpdate({ _id: recipe }, {$inc:{punctuation: dif} }, { new: true }, function (err, recipe) {
+                Recipe.findOneAndUpdate({ _id: req.body.recipe }, {$inc:{punctuation: dif} }, { new: true }, function (err, recipe2) {
                     if (err)
                         res.send(err);
-                    res.json(recipe);
+                    //res.json(recipe2);
                 });
             }
             //return res.json({ 'votation': votation })
