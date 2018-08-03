@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var router = require('express').Router();
 var Recipe = mongoose.model('recipe');
 var ItemRecipe = mongoose.model('itemRecipe');
+var Category = mongoose.model('category');
 
 
 //Alta de Recetas
@@ -15,7 +16,16 @@ router.post('/', (req, res, next) => {
     let punctuation = 0;
     let creator= req.body.creator;
     let category= req.body.category;
+    /*
+    let category= [];
 
+    let cates;
+
+    Category.find({})
+        .then(categories => {
+           this.cates=categories;
+        })
+        */
     //Acomodar esto para los pasos y las categorías
     /* 
     req.body.forEach(element,index => {
