@@ -13,8 +13,9 @@ router.post('/', (req, res, next) => {
     let password_confirmation = req.body.password_confirmation;
     let email = req.body.email;
     let favorites = req.body.favorites;
-    let type = req.body.type;
-
+    let type;
+    if(req.body.type) type = req.body.type;
+    else type = 0;
 
     var user = new User({
         name: name,
@@ -59,9 +60,9 @@ router.get('/:id', (req, res, next) => {
 });
 
 //Buscar un usuario por usuario y contraseña
-router.post('/log', (req, res, next) => {
+router.post('/login', (req, res, next) => {
     console.log(req.body);
-    User.findOne({username:req.body.username, password: req.body.password})
+    User.findOne({email:req.body.email, password: req.body.password})
         .then(user => {
             return res.json({ 'user': user })
         })
