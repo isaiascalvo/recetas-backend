@@ -129,7 +129,6 @@ router.get('/:id', (req, res, next) => {
             console.log(recipe);
             return res.json({ 'recipe': recipe })
         })
-    .catch(next);
 });
 
 //Modificar una receta
