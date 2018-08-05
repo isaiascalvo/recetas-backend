@@ -45,7 +45,9 @@ router.post('/', (req, res, next) => {
         category: category,
     });
     recipe.save().then(function(us){
-        res.send("Recipe had been posted \n" + recipe);
+        return res.json({ 'recipe': recipe });
+
+        //res.send("Recipe had been posted \n" + recipe);
     }, function(err){
         console.log(String(err));
         res.send("The recipe has not been registered correctly");
