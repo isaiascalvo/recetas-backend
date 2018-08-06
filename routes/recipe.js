@@ -3,6 +3,7 @@ var router = require('express').Router();
 var Recipe = mongoose.model('recipe');
 var ItemRecipe = mongoose.model('itemRecipe');
 var Category = mongoose.model('category');
+var Ingredient = mongoose.model('ingredient');
 
 
 //Alta de Recetas
@@ -10,7 +11,7 @@ router.post('/', (req, res, next) => {
     let name = req.body.name;
     let time = req.body.time;
     let description = req.body.description;
-    let items = req.body.items;
+    let items = new Array();// = req.body.items;
     let preparation = req.body.preparation;
     let votes = 0;
     let punctuation = 0;
@@ -27,31 +28,77 @@ router.post('/', (req, res, next) => {
         })
         */
     //Acomodar esto para los pasos y las categorías
-    /* 
-    req.body.forEach(element,index => {
-        
-    });
-    */
-
+    
     var recipe = new Recipe({
         name: name,
         time: time,
         description: description,
-        items: items,
+        //items: items,
         preparation : preparation,
         votes: votes,
         punctuation: punctuation,
         creator: creator,
         category: category,
     });
-    recipe.save().then(function(us){
-        return res.json({ 'recipe': recipe });
+    recipe.save().then(async res =>{
+        console.log(req.body.items);
+        console.log(recipe._id);
+        //nunca entra al siguiente foreach
+        req.body.items.forEach((it,index) => {
+            console.log('algo');
+            Ingredient.find({name:it})
+            .then(ingredient => {
+                if (ingredient._id==null) 
+                { 
+                    var ingre = new Ingredient({
+                        name: it,
+                    });
+                    ingre.save()
+                    .then(us =>{
+                        console.log('MOSTRANDO INGRE1');
+                        console.log(ingre._id);
+                        var itemRecipe = new ItemRecipe({
+                            quantity: req.body.cants2[index],
+                            ingredient: ingre._id,
+                            recipe: recipe,
+                        });
+                        itemRecipe.save()
+                        .then(ig =>{
+                            console.log(itemRecipe._id);
+                            items.push(itemRecipe._id);
+                        }).catch(next);
+                    }).catch(next);
+                }
+                else
+                {
+                    console.log('MOSTRANDO INGRE2');
+                    var itemRecipe = new ItemRecipe({
+                        quantity: req.body.cants2[index],
+                        ingredient:ingredient._id,
+                        recipe: recipe,
+                    });
+                    itemRecipe.save()
+                    .then(ig =>{
+                        items.push(itemRecipe._id);
+                    }).catch(next);
+                }
+            }).catch(next);
+        });
+
+        await Recipe.findOneAndUpdate({ _id: recipe._id }, {items:items}, { new: true }, function (err, recipe) {});
+        //return res.json({ 'recipe': recipe });
 
         //res.send("Recipe had been posted \n" + recipe);
     }, function(err){
         console.log(String(err));
         res.send("The recipe has not been registered correctly");
-    })
+    }).catch(next);
+    
+    Recipe.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, function (err, recipe) {
+        if (err)
+            res.send(err);
+        res.json(recipe);
+    });
 });
 
 //Listar todos las recetas
