@@ -40,10 +40,9 @@ router.post('/', (req, res, next) => {
         creator: creator,
         category: category,
     });
-    recipe.save().then(async res =>{
+    recipe.save().then(res =>{
         console.log(req.body.items);
         console.log(recipe._id);
-        //nunca entra al siguiente foreach
         req.body.items.forEach((it,index) => {
             console.log('algo');
             Ingredient.find({name:it})
@@ -65,7 +64,16 @@ router.post('/', (req, res, next) => {
                         itemRecipe.save()
                         .then(ig =>{
                             console.log(itemRecipe._id);
-                            items.push(itemRecipe._id);
+                            Recipe.findOneAndUpdate(
+                                {
+                                    _id: recipe._id
+                                }, {
+                                  $addToSet : {
+                                    items:itemRecipe._id
+                                  }
+                                }
+                              ).catch(next);
+                            //items.push(itemRecipe._id);
                         }).catch(next);
                     }).catch(next);
                 }
@@ -79,14 +87,24 @@ router.post('/', (req, res, next) => {
                     });
                     itemRecipe.save()
                     .then(ig =>{
-                        items.push(itemRecipe._id);
+                        Recipe.findOneAndUpdate(
+                            {
+                                _id: recipe._id
+                            }, {
+                              $addToSet : {
+                                items:itemRecipe._id
+                              }
+                            }
+                          ).catch(next);
+                        //items.push(itemRecipe._id);
                     }).catch(next);
                 }
             }).catch(next);
         });
 
-        await Recipe.findOneAndUpdate({ _id: recipe._id }, {items:items}, { new: true }, function (err, recipe) {});
+        //Recipe.findOneAndUpdate({ _id: recipe._id }, {items:items}, { new: true }, function (err, recipe) {});
         //return res.json({ 'recipe': recipe });
+        
 
         //res.send("Recipe had been posted \n" + recipe);
     }, function(err){
