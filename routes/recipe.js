@@ -28,6 +28,14 @@ router.post('/', (req, res, next) => {
         })
         */
     //Acomodar esto para los pasos y las categorías
+    removeElement(preparation, " ");
+    req.body.items.forEach((i,index) => {
+        if(i==" ")
+        {
+            req.body.items.splice(index,1);
+            req.body.cants2.splice(index,1);
+        }            
+    });
     
     var recipe = new Recipe({
         name: name,
@@ -73,7 +81,6 @@ router.post('/', (req, res, next) => {
                                   }
                                 }
                               ).catch(next);
-                            //items.push(itemRecipe._id);
                         }).catch(next);
                     }).catch(next);
                 }
@@ -96,7 +103,6 @@ router.post('/', (req, res, next) => {
                               }
                             }
                           ).catch(next);
-                        //items.push(itemRecipe._id);
                     }).catch(next);
                 }
             }).catch(next);
@@ -152,17 +158,17 @@ router.get('/MyRecipes/:creator', (req, res, next) => {
 //Buscar Recetas por nombre
 //falta hacer
 router.get('/byName/:name', (req, res, next) => {
-    Recipe.findOne({name:req.params.name})
+    Recipe.find({name:req.params.name})
     .populate( 'creator' )
     .populate( 'category' )
     .populate( { path: 'items', populate: { path: 'ingredient'}})
-    .then(recipe => {
-        if (!recipe) { return res.sendStatus(401); }
-        return res.json({ 'recipe': recipe })
+    .then(recipes => {
+        if (!recipes) { return res.sendStatus(401); }
+        return res.json({ 'recipes': recipes })
     })
 });
 
-//Buscar Recetas por categoría
+//Buscar Recetas por nombre de categoría
 //falta hacer
 router.get('/byCategory/:category', (req, res, next) => {
     Category.findOne({name:req.params.category})
@@ -185,11 +191,22 @@ router.get('/byCategory/:category', (req, res, next) => {
     })
 });
 
+//Buscar Recetas por ID de categoría
+router.get('/byCategoryID/:categoryID', (req, res, next) => {
+    Recipe.find({category:req.params.categoryID})
+        .populate( 'creator' )
+        .populate( 'category' )
+        .populate( { path: 'items', populate: { path: 'ingredient'}})
+        .then(recipes => {
+            return res.json({ 'recipes': recipes })
+        })
+});
+
 //Listar una receta
 router.get('/:id', (req, res, next) => {
     let id = req.params.id;
     Recipe.findById(id)
-        .populate( 'user' )
+        .populate( 'creator' )
         .populate( 'category' )
         .populate( { path: 'items', populate: { path: 'ingredient'}})
         .exec(function (err, recipe) {
@@ -201,24 +218,114 @@ router.get('/:id', (req, res, next) => {
 //Modificar una receta
 //falta acomodar
 router.put('/:id', (req, res, next) => {
-    /* Lo comento porque no se si será necesario
-    //si desea modificar los items
-    if(req.body.items)
-    {
+    let id = req.params.id;
 
-    }
-    else
-    {
-
-    }
-    */
-    Recipe.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, function (err, recipe) {
-        if (err)
-            res.send(err);
-        res.json(recipe);
+    removeElement(req.body.preparation, " ");
+    req.body.items.forEach((i,index) => {
+        if(i==" ")
+        {
+            req.body.items.splice(index,1);
+            req.body.cants2.splice(index,1);
+        }            
     });
-    //res.send("Recipe updated");
+
+    let ingredientes =  req.body.items;
+    console.log("ingredientes",ingredientes);
+    req.body.items=new Array();
+    console.log("boddddy",req.body);
+    
+    // req.body.items = ingredientes;          
+    Recipe.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, function (err, recipe) {
+            if (err)
+                res.send(err);
+            res.json(recipe);
+        }).catch(next);
+    
+    //req.body.items = ingredientes;
+    
+    //console.log(req.body.items);
+    //console.log(req.params.id);
+    // Necesito ejecutar luego de este foreach la actualización de las recetas
+    console.log("ingredientyes",ingredientes);
+    ingredientes.forEach((it,index) => {
+        Ingredient.find({name:it})
+        .then(ingredient => {
+            if (ingredient._id==null) 
+            { 
+                var ingre = new Ingredient({
+                    name: it,
+                });
+                ingre.save()
+                .then(us =>{
+                    console.log('MOSTRANDO INGRE1');
+                    console.log(ingre._id);
+                    var itemRecipe = new ItemRecipe({
+                        quantity: req.body.cants2[index],
+                        ingredient: ingre._id,
+                        recipe: id,
+                    });
+                    itemRecipe.save()
+                    .then(ig =>{
+                        console.log(itemRecipe._id);
+                        //ingredientes.push(itemRecipe._id);
+                        Recipe.findOneAndUpdate(
+                            {
+                                _id: req.params.id
+                            }, {
+                                $addToSet : {
+                                items:itemRecipe._id
+                                }
+                            }
+                            ).catch(next);
+                    }).catch(next);
+                }).catch(next);
+            }
+            else
+            {
+                ItemRecipe.findOne({ingredient:it, recipe: id}).then(ite => {
+                    if(ite._id==null){
+                        console.log('MOSTRANDO INGRE2');
+                        var itemRecipe = new ItemRecipe({
+                            quantity: req.body.cants2[index],
+                            ingredient:ingredient._id,
+                            recipe: id,
+                        });
+                        itemRecipe.save()
+                        .then(ig =>{
+                            // ingredientes.push(itemRecipe._id);                           
+                            Recipe.findOneAndUpdate(
+                                {
+                                    _id: id
+                                }, {
+                                $addToSet : {
+                                    items:itemRecipe._id
+                                }
+                                }
+                            ).catch(next);
+                        }).catch(next);
+                    }
+                    else{                       
+                        itemRecipe.findOneAndUpdate({ingredient:it, recipe: id},{quantity:req.body.cants2[index]}).then(ig =>{
+                            //ingredientes.push(ig._id);
+                            Recipe.findOneAndUpdate(
+                                {
+                                    _id: id
+                                }, {
+                                $addToSet : {
+                                    items:itemRecipe._id
+                                }
+                                }
+                            ).catch(next);
+                        }).catch(next);                        
+                    }
+                })
+            }
+        }).catch(next);
+    });
 });
+
+    
+    
 
 //Baja de Receta indicando el id
 router.delete('/:id', (req, res, next) => {
@@ -244,5 +351,14 @@ router.delete('/:id', (req, res, next) => {
         }
     });        
 });
+
+function removeElement(array, elem) {
+    array.forEach((ell,index) => {
+        if (ell==elem) {
+            // modifies array in place
+            array.splice(index,1);
+          }
+    });
+}
 
 module.exports = router;
