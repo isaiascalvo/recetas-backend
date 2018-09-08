@@ -147,12 +147,9 @@ router.get('/MyRecipes/:creator', (req, res, next) => {
         .populate( 'creator' )
         .populate( 'category' )
         .populate( { path: 'items', populate: { path: 'ingredient'}})
-
-            .exec(function (err, recipes) {
-                return res.json({ 'recipes': recipes })
-            })                
-    .catch(next);
-   
+        .then(recipes => {
+            return res.json({ 'recipes': recipes })
+        })                  
 });
 
 //Buscar Recetas por nombre
