@@ -59,6 +59,17 @@ router.get('/:id', (req, res, next) => {
         })
 });
 
+//Verificar Email repetido
+router.get('/email/:email', (req, res, next) => {
+    let email = req.params.email;
+    User.findOne({email: email})
+        .then(user => {
+            return res.json({ 'user': user })
+            // if (!user) { return res.json({ 'rta': "false" }) }
+            // else { return res.json({ 'rta': "true" }); } 
+        })
+});
+
 //Buscar un usuario por usuario y contraseña
 router.post('/login', (req, res, next) => {
     console.log(req.body);
@@ -71,11 +82,20 @@ router.post('/login', (req, res, next) => {
 //Modificar usuario
 //falta modificar recetas favoritas
 router.put('/:id', (req, res, next) => {
-    User.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, function (err, user) {
-        if (err)
-            res.send(err);
-        res.json(user);
-    });
+    User.findOneAndUpdate({ _id: req.params.id }, 
+        {$set:
+            {
+            name: req.body.name,
+            lastname: req.body.lastname,
+            username: req.body.username,
+            email: req.body.email,
+            }
+        },
+        { new: true }, function (err, user) {
+            if (err)
+                res.send(err);
+            res.json(user);
+        });
 });
 
 //Eliminar usuario.
