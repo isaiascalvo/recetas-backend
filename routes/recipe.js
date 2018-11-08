@@ -215,6 +215,7 @@ router.get('/:id', (req, res, next) => {
 //Modificar una receta
 //falta acomodar
 router.put('/:id', (req, res, next) => {
+    console.log("\nActualizando...");
     let id = req.params.id;
 
     removeElement(req.body.preparation, " ");
@@ -227,9 +228,9 @@ router.put('/:id', (req, res, next) => {
     });
 
     let ingredientes =  req.body.items;
-    console.log("ingredientes",ingredientes);
+    console.log("\ningredientes",ingredientes);
     req.body.items=new Array();
-    console.log("boddddy",req.body);
+    console.log("\nboddddy",req.body);
     
     // req.body.items = ingredientes;          
     Recipe.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, function (err, recipe) {
@@ -244,16 +245,18 @@ router.put('/:id', (req, res, next) => {
     //console.log(req.params.id);
     // Necesito ejecutar luego de este foreach la actualización de las recetas
     console.log("ingredientyes",ingredientes);
-    ingredientes.forEach((it,index) => {
+    ingredientes.forEach(function(it,index) {
         Ingredient.find({name:it})
-        .then(ingredient => {
-            if (ingredient._id==null) 
+        .then(function(ingredient){
+            if (ingredient.length===0) 
             { 
+                console.log('\n',ingredient);
+                console.log('undefineeddd');
                 var ingre = new Ingredient({
                     name: it,
                 });
                 ingre.save()
-                .then(us =>{
+                .then(function(){
                     console.log('MOSTRANDO INGRE1');
                     console.log(ingre._id);
                     var itemRecipe = new ItemRecipe({
@@ -262,16 +265,20 @@ router.put('/:id', (req, res, next) => {
                         recipe: id,
                     });
                     itemRecipe.save()
-                    .then(ig =>{
+                    .then(function(){
                         console.log(itemRecipe._id);
                         //ingredientes.push(itemRecipe._id);
                         Recipe.findOneAndUpdate(
                             {
                                 _id: req.params.id
-                            }, {
+                            }, 
+                            {
                                 $addToSet : {
-                                items:itemRecipe._id
+                                    items:itemRecipe._id
                                 }
+                            },
+                            { 
+                                returnNewDocument:true, 
                             }
                             ).catch(next);
                     }).catch(next);
@@ -279,41 +286,55 @@ router.put('/:id', (req, res, next) => {
             }
             else
             {
-                ItemRecipe.findOne({ingredient:it, recipe: id}).then(ite => {
-                    if(ite._id==null){
-                        console.log('MOSTRANDO INGRE2');
+                console.log('\n',ingredient);
+                console.log('\n',ingredient[0]._id);
+                console.log('defineeeddd');
+                ItemRecipe.findOne({ingredient:ingredient[0]._id, recipe: id}).then(function(ite) {
+                    if(ite.length===0){
+                        console.log('\nitemrecipe no encontrado');   
                         var itemRecipe = new ItemRecipe({
                             quantity: req.body.cants2[index],
-                            ingredient:ingredient._id,
+                            ingredient:ingredient[0]._id,
                             recipe: id,
                         });
                         itemRecipe.save()
-                        .then(ig =>{
+                        .then(function(itemRecipe){
                             // ingredientes.push(itemRecipe._id);                           
                             Recipe.findOneAndUpdate(
                                 {
                                     _id: id
                                 }, {
                                 $addToSet : {
-                                    items:itemRecipe._id
-                                }
+                                    items:itemRecipe[0]._id
+                                    }
+                                },
+                                { 
+                                    returnNewDocument:true, 
                                 }
                             ).catch(next);
                         }).catch(next);
                     }
-                    else{                       
-                        itemRecipe.findOneAndUpdate({ingredient:it, recipe: id},{quantity:req.body.cants2[index]}).then(ig =>{
-                            //ingredientes.push(ig._id);
+                    else{         
+                        console.log('\nitemrecipe encontrado');  
+                        console.log(ite._id);   
+                        console.log(ite);  
+                        ItemRecipe.findOneAndUpdate({_id:ite._id},{quantity:req.body.cants2[index]},{new: true, returnNewDocument: true,})
+                        .then(itemRecipe => {
+                            console.log(itemRecipe);
                             Recipe.findOneAndUpdate(
                                 {
                                     _id: id
                                 }, {
                                 $addToSet : {
                                     items:itemRecipe._id
-                                }
-                                }
+                                    }
+                                },
+                                { 
+                                    returnNewDocument:true, 
+                                }                                
                             ).catch(next);
-                        }).catch(next);                        
+                        })
+                        .catch(next);                        
                     }
                 })
             }
