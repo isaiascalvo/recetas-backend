@@ -309,6 +309,7 @@ router.put('/:id', (req, res, next) => {
                                     }
                                 },
                                 { 
+                                    new: true,
                                     returnNewDocument:true, 
                                 }
                             ).catch(next);
@@ -330,6 +331,7 @@ router.put('/:id', (req, res, next) => {
                                     }
                                 },
                                 { 
+                                    new: true,
                                     returnNewDocument:true, 
                                 }                                
                             ).catch(next);

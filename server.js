@@ -22,6 +22,7 @@ require('./models/ingredient.js');
 require('./models/itemRecipe.js');
 require('./models/votation.js');
 require('./models/image.js');
+require('./models/report.js');
 
 //Routes
 app.use(require('./routes'));

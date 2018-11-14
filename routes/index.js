@@ -7,5 +7,6 @@ router.use('/api/ingredient', require('./ingredient'));
 router.use('/api/itemRecipe', require('./itemRecipe'));
 router.use('/api/votation', require('./votation'));
 router.use('/api/image', require('./image'));
+router.use('/api/report', require('./report'));
 
 module.exports=router;
