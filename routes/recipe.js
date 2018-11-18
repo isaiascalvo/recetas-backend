@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var router = require('express').Router();
 var Recipe = mongoose.model('recipe');
+var Report = mongoose.model('report');
 var ItemRecipe = mongoose.model('itemRecipe');
 var Category = mongoose.model('category');
 var Ingredient = mongoose.model('ingredient');
@@ -150,6 +151,15 @@ router.get('/MyRecipes/:creator', (req, res, next) => {
         .then(recipes => {
             return res.json({ 'recipes': recipes })
         })                  
+});
+
+//Contar las recetas de un creador
+router.get('/CantRecipes/:creator', (req, res, next) => { 
+    let id = req.params.creator;
+    Recipe.find({creator:id}).count()
+    .then(count => {
+        return res.json({ 'count': count })
+    });
 });
 
 //Buscar Recetas por nombre
@@ -368,6 +378,7 @@ router.delete('/:id', (req, res, next) => {
                 };
                 res.status(200).send(response);
             });
+            Report.deleteMany({recipe:req.params.id});
         }
     });        
 });

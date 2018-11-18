@@ -24,12 +24,44 @@ router.post('/', (req, res, next) => {
 });
 
 //Listar todas las Denuncias
+// router.get('/', (req, res, next) => {
+//     Report.find({}).sort({recipe: 1})
+//     .populate( { path: 'recipe', populate: { path: 'creator'}})
+//         .then(reports => {
+//             if (!reports) { return res.sendStatus(401); }
+//             return res.json({ 'reports': reports })
+//         })
+// });
+
+//Listar todas las Denuncias
 router.get('/', (req, res, next) => {
-    Report.find({})
-        .then(reports => {
-            if (!reports) { return res.sendStatus(401); }
-            return res.json({ 'reports': reports })
-        })
+    Report.aggregate(
+        [
+            { $group : {_id: "$recipe", recipe: {$first: '$recipe'}, count: { $sum: 1 } } },
+            { $sort : { count: -1 }},
+            {
+                $lookup: {
+                    from: "recipes",
+                    localField: "recipe",
+                    foreignField: "_id",
+                    as: "recipe"
+                }
+            },
+            {$unwind: "$recipe"},
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "recipe.creator",
+                    foreignField: "_id",
+                    as: "recipe.creator"
+                }
+            }
+        ]
+    )
+    .then(reports => {
+        if (!reports) { return res.sendStatus(401); }
+        return res.json({ 'reports': reports })
+    })
 });
 
 //Listar todas las Denuncias de una receta
