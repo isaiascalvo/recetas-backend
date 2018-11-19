@@ -223,9 +223,7 @@ router.get('/:id', (req, res, next) => {
 });
 
 //Modificar una receta
-//falta acomodar
 router.put('/:id', (req, res, next) => {
-    console.log("\nActualizando...");
     let id = req.params.id;
 
     removeElement(req.body.preparation, " ");
@@ -238,37 +236,23 @@ router.put('/:id', (req, res, next) => {
     });
 
     let ingredientes =  req.body.items;
-    console.log("\ningredientes",ingredientes);
     req.body.items=new Array();
-    console.log("\nboddddy",req.body);
     
-    // req.body.items = ingredientes;          
     Recipe.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, function (err, recipe) {
             if (err)
                 res.send(err);
             res.json(recipe);
         }).catch(next);
-    
-    //req.body.items = ingredientes;
-    
-    //console.log(req.body.items);
-    //console.log(req.params.id);
-    // Necesito ejecutar luego de este foreach la actualización de las recetas
-    console.log("ingredientyes",ingredientes);
     ingredientes.forEach(function(it,index) {
         Ingredient.find({name:it})
         .then(function(ingredient){
             if (ingredient.length===0) 
             { 
-                console.log('\n',ingredient);
-                console.log('undefineeddd');
                 var ingre = new Ingredient({
                     name: it,
                 });
                 ingre.save()
                 .then(function(){
-                    console.log('MOSTRANDO INGRE1');
-                    console.log(ingre._id);
                     var itemRecipe = new ItemRecipe({
                         quantity: req.body.cants2[index],
                         ingredient: ingre._id,
@@ -276,8 +260,6 @@ router.put('/:id', (req, res, next) => {
                     });
                     itemRecipe.save()
                     .then(function(){
-                        console.log(itemRecipe._id);
-                        //ingredientes.push(itemRecipe._id);
                         Recipe.findOneAndUpdate(
                             {
                                 _id: req.params.id
@@ -296,12 +278,8 @@ router.put('/:id', (req, res, next) => {
             }
             else
             {
-                console.log('\n',ingredient);
-                console.log('\n',ingredient[0]._id);
-                console.log('defineeeddd');
                 ItemRecipe.findOne({ingredient:ingredient[0]._id, recipe: id}).then(function(ite) {
                     if(ite.length===0){
-                        console.log('\nitemrecipe no encontrado');   
                         var itemRecipe = new ItemRecipe({
                             quantity: req.body.cants2[index],
                             ingredient:ingredient[0]._id,
@@ -309,7 +287,6 @@ router.put('/:id', (req, res, next) => {
                         });
                         itemRecipe.save()
                         .then(function(itemRecipe){
-                            // ingredientes.push(itemRecipe._id);                           
                             Recipe.findOneAndUpdate(
                                 {
                                     _id: id
@@ -326,12 +303,8 @@ router.put('/:id', (req, res, next) => {
                         }).catch(next);
                     }
                     else{         
-                        console.log('\nitemrecipe encontrado');  
-                        console.log(ite._id);   
-                        console.log(ite);  
                         ItemRecipe.findOneAndUpdate({_id:ite._id},{quantity:req.body.cants2[index]},{new: true, returnNewDocument: true,})
                         .then(itemRecipe => {
-                            console.log(itemRecipe);
                             Recipe.findOneAndUpdate(
                                 {
                                     _id: id
@@ -354,9 +327,6 @@ router.put('/:id', (req, res, next) => {
     });
 });
 
-    
-    
-
 //Baja de Receta indicando el id
 router.delete('/:id', (req, res, next) => {
     //borra los items de la receta
@@ -371,14 +341,27 @@ router.delete('/:id', (req, res, next) => {
         }
         else
         {
-            Recipe.findByIdAndRemove(req.params.id, (err, recipe) => {
-                let response = {
-                    message: "Recipe successfully deleted",
-                    id: recipe._id
-                };
-                res.status(200).send(response);
-            });
-            Report.deleteMany({recipe:req.params.id});
+            Report.deleteMany({recipe:req.params.id}, (err,report) =>{
+                if(err)
+                {
+                    let response = {
+                        message: "Error. The Recipe has not been deleted because there was an error when deleting their reports",
+                        id: recipe._id
+                    };
+                    res.status(409).send(response);
+                }
+                else
+                {
+                    Recipe.findByIdAndRemove(req.params.id, (err, recipe) => {
+                        let response = {
+                            message: "Recipe successfully deleted",
+                            id: recipe._id
+                        };
+                        res.status(200).send(response);
+                    
+                    });
+                }
+            });            
         }
     });        
 });
