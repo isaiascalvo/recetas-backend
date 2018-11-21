@@ -39,7 +39,7 @@ router.post('/', (req, res, next) => {
 //Listar todos los usuario
 router.get('/', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
-    if (token.userType === 1)
+    if (token !== null && token.userType === 1)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -65,7 +65,7 @@ router.get('/', (req, res, next) => {
 router.get('/access', (req, res, next) => {
 
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -104,7 +104,7 @@ router.post('/login', (req, res, next) => {
     User.findOne({email:req.body.email, password: req.body.password})
         .then(user => {
             if(!user) return res.sendStatus(401);
-            var token = { access_token: jwt.sign({userID: user._id, userType: user.type}, 'recetas-app-shared-secret', {expiresIn: '2h'}), username: user.username, type: user.type};
+            var token = { access_token: jwt.sign({userID: user._id, userType: user.type}, 'recetas-app-shared-secret', {expiresIn: '2h'}), _id: user._id, username: user.username, type: user.type};
             res.send(token);
         })
 });
@@ -113,7 +113,7 @@ router.post('/login', (req, res, next) => {
 //falta modificar recetas favoritas
 router.put('/', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -146,26 +146,40 @@ router.put('/', (req, res, next) => {
 
 //Eliminar usuario.
 router.delete('/:id', (req, res, next) => {
-    Recipe.find({creator:req.params.id},(err, recipes) => {
-        if(!recipes)
-        {
-            User.findByIdAndRemove(req.params.id, (err, user) => {
+    let token = jwt.decode(req.headers.authorization);
+    if (token !== null && token.userID !== null)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+        Recipe.find({creator:req.params.id},(err, recipes) => {
+            if(!recipes)
+            {
+                User.findByIdAndRemove(req.params.id, (err, user) => {
+                    let response = {
+                        message: "User successfully deleted",
+                        id: user._id
+                    };
+                    res.status(200).send(response);
+                    }
+                );
+            }
+            else
+            {
                 let response = {
-                    message: "User successfully deleted",
-                    id: user._id
+                    message: "Error. The user has not been eliminated because there are many recipes that belong to him.",
                 };
-                res.status(200).send(response);
-                }
-            );
-        }
-        else
-        {
-            let response = {
-                message: "Error. The user has not been eliminated because there are many recipes that belong to him.",
-            };
-            res.status(409).send(response);
-        }
-    })
+                res.status(409).send(response);
+            }
+        })
+    }
+    else
+    {
+        res.status(403).send("Error. You must login.");
+    }
 });
 
 module.exports = router;

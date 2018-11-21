@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 //Alta de Recetas
 router.post('/', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -132,7 +132,7 @@ router.get('/', (req, res, next) => {
 router.get('/MyRecipes', (req, res, next) => { 
 
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -228,7 +228,7 @@ router.put('/:id', (req, res, next) => {
 
     let id = req.params.id;
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -248,94 +248,103 @@ router.put('/:id', (req, res, next) => {
 
         let ingredientes =  req.body.items;
         req.body.items=new Array();
-        
-        Recipe.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, function (err, recipe) {
-                if (err)
-                    res.send(err);
-                res.json(recipe);
-            }).catch(next);
-        ingredientes.forEach(function(it,index) {
-            Ingredient.find({name:it})
-            .then(function(ingredient){
-                if (ingredient.length===0) 
-                { 
-                    var ingre = new Ingredient({
-                        name: it,
-                    });
-                    ingre.save()
-                    .then(function(){
-                        var itemRecipe = new ItemRecipe({
-                            quantity: req.body.cants2[index],
-                            ingredient: ingre._id,
-                            recipe: id,
-                        });
-                        itemRecipe.save()
-                        .then(function(){
-                            Recipe.findOneAndUpdate(
-                                {
-                                    _id: req.params.id
-                                }, 
-                                {
-                                    $addToSet : {
-                                        items:itemRecipe._id
-                                    }
-                                },
-                                { 
-                                    returnNewDocument:true, 
-                                }
-                                ).catch(next);
-                        }).catch(next);
-                    }).catch(next);
-                }
-                else
-                {
-                    ItemRecipe.findOne({ingredient:ingredient[0]._id, recipe: id}).then(function(ite) {
-                        if(ite.length===0){
-                            var itemRecipe = new ItemRecipe({
-                                quantity: req.body.cants2[index],
-                                ingredient:ingredient[0]._id,
-                                recipe: id,
+
+        Recipe.findById(id).then(function(rec){
+            if(rec.creator == token.userID)
+            {
+                Recipe.findOneAndUpdate({ _id: id }, req.body, { new: true }, function (err, recipe) {
+                    if (err)
+                        res.send(err);
+                    res.json(recipe);
+                }).catch(next);
+                ingredientes.forEach(function(it,index) {
+                    Ingredient.find({name:it})
+                    .then(function(ingredient){
+                        if (ingredient.length===0) 
+                        { 
+                            var ingre = new Ingredient({
+                                name: it,
                             });
-                            itemRecipe.save()
-                            .then(function(itemRecipe){
-                                Recipe.findOneAndUpdate(
-                                    {
-                                        _id: id
-                                    }, {
-                                    $addToSet : {
-                                        items:itemRecipe[0]._id
+                            ingre.save()
+                            .then(function(){
+                                var itemRecipe = new ItemRecipe({
+                                    quantity: req.body.cants2[index],
+                                    ingredient: ingre._id,
+                                    recipe: id,
+                                });
+                                itemRecipe.save()
+                                .then(function(){
+                                    Recipe.findOneAndUpdate(
+                                        {
+                                            _id: req.params.id
+                                        }, 
+                                        {
+                                            $addToSet : {
+                                                items:itemRecipe._id
+                                            }
+                                        },
+                                        { 
+                                            returnNewDocument:true, 
                                         }
-                                    },
-                                    { 
-                                        new: true,
-                                        returnNewDocument:true, 
-                                    }
-                                ).catch(next);
+                                        ).catch(next);
+                                }).catch(next);
                             }).catch(next);
                         }
-                        else{         
-                            ItemRecipe.findOneAndUpdate({_id:ite._id},{quantity:req.body.cants2[index]},{new: true, returnNewDocument: true,})
-                            .then(itemRecipe => {
-                                Recipe.findOneAndUpdate(
-                                    {
-                                        _id: id
-                                    }, {
-                                    $addToSet : {
-                                        items:itemRecipe._id
-                                        }
-                                    },
-                                    { 
-                                        new: true,
-                                        returnNewDocument:true, 
-                                    }                                
-                                ).catch(next);
+                        else
+                        {
+                            ItemRecipe.findOne({ingredient:ingredient[0]._id, recipe: id}).then(function(ite) {
+                                if(ite.length===0){
+                                    var itemRecipe = new ItemRecipe({
+                                        quantity: req.body.cants2[index],
+                                        ingredient:ingredient[0]._id,
+                                        recipe: id,
+                                    });
+                                    itemRecipe.save()
+                                    .then(function(itemRecipe){
+                                        Recipe.findOneAndUpdate(
+                                            {
+                                                _id: id
+                                            }, {
+                                            $addToSet : {
+                                                items:itemRecipe[0]._id
+                                                }
+                                            },
+                                            { 
+                                                new: true,
+                                                returnNewDocument:true, 
+                                            }
+                                        ).catch(next);
+                                    }).catch(next);
+                                }
+                                else{         
+                                    ItemRecipe.findOneAndUpdate({_id:ite._id},{quantity:req.body.cants2[index]},{new: true, returnNewDocument: true,})
+                                    .then(itemRecipe => {
+                                        Recipe.findOneAndUpdate(
+                                            {
+                                                _id: id
+                                            }, {
+                                            $addToSet : {
+                                                items:itemRecipe._id
+                                                }
+                                            },
+                                            { 
+                                                new: true,
+                                                returnNewDocument:true, 
+                                            }                                
+                                        ).catch(next);
+                                    })
+                                    .catch(next);                        
+                                }
                             })
-                            .catch(next);                        
                         }
-                    })
-                }
-            }).catch(next);
-        });
+                    }).catch(next);
+                });
+            }
+            else
+            {
+                res.status(403).send("Error. You must be the creator of the recipe to edit it.");
+            }
+        })        
     }
     else 
     {
@@ -346,7 +355,7 @@ router.put('/:id', (req, res, next) => {
 //Baja de Receta indicando el id
 router.delete('/:id', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');

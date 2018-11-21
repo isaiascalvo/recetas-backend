@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 //Alta de Denuncia
 router.post('/', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -40,7 +40,7 @@ router.post('/', (req, res, next) => {
 //Listar todas las Denuncias
 router.get('/', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -85,7 +85,7 @@ router.get('/', (req, res, next) => {
 //Listar todas las Denuncias de una receta
 router.get('/RecipeReports/:recipe', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -110,7 +110,7 @@ router.get('/RecipeReports/:recipe', (req, res, next) => {
 //Buscar una Denuncia por id
 router.get('/:id', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -134,7 +134,7 @@ router.get('/:id', (req, res, next) => {
 //Modificar Denuncia
 router.put('/:id', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -157,7 +157,7 @@ router.put('/:id', (req, res, next) => {
 //Baja de Denuncia indicando el id
 router.delete('/:id', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
-    if (token.userID !== null)
+    if (token !== null && token.userID !== null)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
