@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var router = require('express').Router();
 var User = mongoose.model('user');
 var Recipe = mongoose.model('recipe');
-
+const jwt = require('jsonwebtoken');
 
 //Crear un usuario
 router.post('/', (req, res, next) => {
@@ -32,31 +32,59 @@ router.post('/', (req, res, next) => {
     user.save().then(function(us){
         res.json( user);
     }, function(err){
-        console.log(String(err));
         res.send("The user has not been registered correctly");
     })
 });
 
 //Listar todos los usuario
 router.get('/', (req, res, next) => {
-    User.find({})
+    let token = jwt.decode(req.headers.authorization);
+    if (token.userType === 1)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+        User.find({})
         .populate( 'favorites' )
         .then(users => {
             if(!users) { return res.sendStatus(401); }
             return res.json({ 'users': users });
         })
         .catch(next);
+    }
+    else
+    {
+        res.status(403).send("Error. You must be an administrator.");
+    }
 });
 
 //Buscar un usuario por id
-router.get('/:id', (req, res, next) => {
-    let id = req.params.id;
-    User.findById(id)
+router.get('/access', (req, res, next) => {
+
+    let token = jwt.decode(req.headers.authorization);
+    if (token.userID !== null)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+
+        User.findById(token.userID)
         .populate( 'favorites' )
         .then(user => {
             if (!user) { return res.sendStatus(401); }
             return res.json({ 'user': user })
         })
+    }
+    else
+    {
+        res.status(403).send("Error. You must login.");
+    }
 });
 
 //Verificar Email repetido
@@ -72,30 +100,48 @@ router.get('/email/:email', (req, res, next) => {
 
 //Buscar un usuario por usuario y contraseña
 router.post('/login', (req, res, next) => {
-    console.log(req.body);
+    // console.log(req.body);
     User.findOne({email:req.body.email, password: req.body.password})
         .then(user => {
-            return res.json({ 'user': user })
+            if(!user) return res.sendStatus(401);
+            var token = { access_token: jwt.sign({userID: user._id, userType: user.type}, 'recetas-app-shared-secret', {expiresIn: '2h'}), username: user.username, type: user.type};
+            res.send(token);
         })
 });
 
 //Modificar usuario
 //falta modificar recetas favoritas
-router.put('/:id', (req, res, next) => {
-    User.findOneAndUpdate({ _id: req.params.id }, 
-        {$set:
-            {
-            name: req.body.name,
-            lastname: req.body.lastname,
-            username: req.body.username,
-            email: req.body.email,
-            }
-        },
-        { new: true }, function (err, user) {
-            if (err)
-                res.send(err);
-            res.json(user);
-        });
+router.put('/', (req, res, next) => {
+    let token = jwt.decode(req.headers.authorization);
+    if (token.userID !== null)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+
+        User.findOneAndUpdate({ _id: token.userID }, 
+            {$set:
+                {
+                name: req.body.name,
+                lastname: req.body.lastname,
+                username: req.body.username,
+                email: req.body.email,
+                type: req.body.type,
+                }
+            },
+            { new: true }, function (err, user) {
+                if (err)
+                    res.send(err);
+                res.json(user);
+            });
+    }
+    else
+    {
+        res.status(403).send("Error. You must login.");
+    }
 });
 
 //Eliminar usuario.
