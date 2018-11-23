@@ -2,6 +2,8 @@ var mongoose = require('mongoose');
 var router = require('express').Router();
 var Recipe = mongoose.model('recipe');
 var Report = mongoose.model('report');
+var User = mongoose.model('user');
+var Votation = mongoose.model('votation');
 var ItemRecipe = mongoose.model('itemRecipe');
 var Category = mongoose.model('category');
 var Ingredient = mongoose.model('ingredient');
@@ -221,6 +223,33 @@ router.get('/:id', (req, res, next) => {
         .exec(function (err, recipe) {
             return res.json({ 'recipe': recipe })
         })
+});
+
+// Mostrar una receta a un usuario específico
+router.get('/details/:id', (req, res, next) => {
+
+    let id = req.params.id;
+    let token = jwt.decode(req.headers.authorization);
+    if (token !== null && token.userID !== null)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+        Recipe.findById(id)
+            .populate( 'creator' )
+            .populate( 'category' )
+            .populate( { path: 'items', populate: { path: 'ingredient'}})
+            .exec(function (err, recipe) {
+                return res.json({ 'recipe': recipe })
+            })
+        }
+    else
+    {
+        res.status(403).send("Error. You must login.");
+    }
 });
 
 //Modificar una receta

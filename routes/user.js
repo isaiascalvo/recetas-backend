@@ -93,8 +93,6 @@ router.get('/email/:email', (req, res, next) => {
     User.findOne({email: email})
         .then(user => {
             return res.json({ 'user': user })
-            // if (!user) { return res.json({ 'rta': "false" }) }
-            // else { return res.json({ 'rta': "true" }); } 
         })
 });
 
@@ -104,7 +102,7 @@ router.post('/login', (req, res, next) => {
     User.findOne({email:req.body.email, password: req.body.password})
         .then(user => {
             if(!user) return res.sendStatus(401);
-            var token = { access_token: jwt.sign({userID: user._id, userType: user.type}, 'recetas-app-shared-secret', {expiresIn: '2h'}), _id: user._id, username: user.username, type: user.type};
+            var token = { access_token: jwt.sign({userID: user._id, userType: user.type}, 'recetas-app-shared-secret', {expiresIn: '2h'}), _id: user._id, username: user.username, type: user.type, favorites: user.favorites};
             res.send(token);
         })
 });
