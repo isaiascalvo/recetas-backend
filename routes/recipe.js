@@ -228,28 +228,14 @@ router.get('/:id', (req, res, next) => {
 // Mostrar una receta a un usuario específico
 router.get('/details/:id', (req, res, next) => {
 
-    let id = req.params.id;
-    let token = jwt.decode(req.headers.authorization);
-    if (token !== null && token.userID !== null)
-    {
-        if( Date.now() > token.exp*1000) {
-            throw new Error('Token has expired');
-        }
-        if( Date.now() < token.nbf*1000) {
-            throw new Error('Token not yet valid');
-        }
-        Recipe.findById(id)
-            .populate( 'creator' )
-            .populate( 'category' )
-            .populate( { path: 'items', populate: { path: 'ingredient'}})
-            .exec(function (err, recipe) {
-                return res.json({ 'recipe': recipe })
-            })
-        }
-    else
-    {
-        res.status(403).send("Error. You must login.");
-    }
+let id = req.params.id;
+Recipe.findById(id)
+    .populate( 'creator' )
+    .populate( 'category' )
+    .populate( { path: 'items', populate: { path: 'ingredient'}})
+    .exec(function (err, recipe) {
+        return res.json({ 'recipe': recipe })
+    })
 });
 
 //Modificar una receta

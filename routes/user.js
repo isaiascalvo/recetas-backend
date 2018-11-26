@@ -107,6 +107,18 @@ router.post('/login', (req, res, next) => {
         })
 });
 
+router.post('/isAdmin', (req, res, next) => {
+    let token = jwt.decode(req.headers.authorization);
+    if (token !== null && token.userType === 1)
+    {
+        return res.json({rta : true});
+    }
+    else
+    {
+        return res.json({rta : false});
+    }
+});
+
 //Modificar usuario
 //falta modificar recetas favoritas
 router.put('/', (req, res, next) => {
