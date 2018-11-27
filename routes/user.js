@@ -5,7 +5,7 @@ var Recipe = mongoose.model('recipe');
 const jwt = require('jsonwebtoken');
 
 //Crear un usuario
-router.post('/', (req, res, next) => {
+router.post('/', (req, res) => {
     let name = req.body.name;
     let lastname = req.body.lastname;
     let username = req.body.username;
@@ -29,8 +29,8 @@ router.post('/', (req, res, next) => {
         
     });
     //Puede haber error desde acá
-    user.save().then(function(us){
-        res.json( user);
+    user.save().then(function(){
+        res.json(user);
     }, function(err){
         res.send("The user has not been registered correctly");
     })
@@ -62,7 +62,7 @@ router.get('/', (req, res, next) => {
 });
 
 //Buscar un usuario por id
-router.get('/access', (req, res, next) => {
+router.get('/access', (req, res) => {
 
     let token = jwt.decode(req.headers.authorization);
     if (token !== null && token.userID !== null)
@@ -88,7 +88,7 @@ router.get('/access', (req, res, next) => {
 });
 
 //Verificar Email repetido
-router.get('/email/:email', (req, res, next) => {
+router.get('/email/:email', (req, res) => {
     let email = req.params.email;
     User.findOne({email: email})
         .then(user => {
@@ -97,7 +97,7 @@ router.get('/email/:email', (req, res, next) => {
 });
 
 //Buscar un usuario por usuario y contraseña
-router.post('/login', (req, res, next) => {
+router.post('/login', (req, res) => {
     // console.log(req.body);
     User.findOne({email:req.body.email, password: req.body.password})
         .then(user => {
@@ -121,7 +121,7 @@ router.post('/isAdmin', (req, res, next) => {
 
 //Modificar usuario
 //falta modificar recetas favoritas
-router.put('/', (req, res, next) => {
+router.put('/', (req, res) => {
     let token = jwt.decode(req.headers.authorization);
     if (token !== null && token.userID !== null)
     {
@@ -154,7 +154,7 @@ router.put('/', (req, res, next) => {
 });
 
 // Dar o Quitar permisos de administrador
-router.put('/permission', (req, res, next) => {
+router.put('/permission', (req, res) => {
     let token = jwt.decode(req.headers.authorization);
     if (token !== null && token.userType === 1)
     {
@@ -180,7 +180,7 @@ router.put('/permission', (req, res, next) => {
 });
 
 //Eliminar usuario.
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', (req, res) => {
     let token = jwt.decode(req.headers.authorization);
     if (token !== null && token.userID !== null)
     {
@@ -190,10 +190,10 @@ router.delete('/:id', (req, res, next) => {
         if( Date.now() < token.nbf*1000) {
             throw new Error('Token not yet valid');
         }
-        Recipe.find({creator:req.params.id},(err, recipes) => {
+        Recipe.find({creator:req.params.id},(recipes) => {
             if(!recipes)
             {
-                User.findByIdAndRemove(req.params.id, (err, user) => {
+                User.findByIdAndRemove(req.params.id, (user) => {
                     let response = {
                         message: "User successfully deleted",
                         id: user._id
