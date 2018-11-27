@@ -111,6 +111,12 @@ router.post('/isAdmin', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
     if (token !== null && token.userType === 1)
     {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
         return res.json({rta : true});
     }
     else

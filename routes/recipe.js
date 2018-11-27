@@ -367,10 +367,76 @@ router.put('/:id', (req, res, next) => {
     }
 });
 
-//Baja de Receta indicando el id
+//Baja de Receta indicando el id hecha por el dueño de la receta
 router.delete('/:id', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
     if (token !== null && token.userID !== null)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+
+        Recipe.findOne({recipe:req.params.id, creator:token.userID}, (err, rec) => {
+            if(err)
+            {
+                let response = {
+                    message: "Error. You must be the owner.",
+                    id: recipe._id
+                };
+                res.status(403).send(response);
+            }
+            else 
+            {
+                //borra los items de la receta
+                ItemRecipe.deleteMany({recipe:req.params.id}, (err, itemRecipe) => {
+                    if(err)
+                    {
+                        let response = {
+                            message: "Error. The Recipe has not been deleted because there was an error when deleting their items.",
+                            id: recipe._id
+                        };
+                        res.status(409).send(response);
+                    }
+                    else
+                    {
+                        Report.deleteMany({recipe:req.params.id}, (err,report) =>{
+                            if(err)
+                            {
+                                let response = {
+                                    message: "Error. The Recipe has not been deleted because there was an error when deleting their reports",
+                                    id: recipe._id
+                                };
+                                res.status(409).send(response);
+                            }
+                            else
+                            {
+                                Recipe.findByIdAndRemove(req.params.id, (err, recipe) => {
+                                    let response = {
+                                        message: "Recipe successfully deleted",
+                                        id: recipe._id
+                                    };
+                                    res.status(200).send(response);
+                                
+                                });
+                            }
+                        });            
+                    }
+                });  
+            }
+        })
+    }   
+    else 
+    {
+        res.status(403).send("Error. You must be the owner.");
+    }   
+});
+
+router.delete('/delAdm/:id', (req, res, next) => {
+    let token = jwt.decode(req.headers.authorization);
+    if (token !== null && token.userType === 1)
     {
         if( Date.now() > token.exp*1000) {
             throw new Error('Token has expired');
@@ -416,7 +482,7 @@ router.delete('/:id', (req, res, next) => {
     }   
     else 
     {
-        res.status(403).send("Error. You must login or be an administrator.");
+        res.status(403).send("Error. You must be an administrator.");
     }   
 });
 
