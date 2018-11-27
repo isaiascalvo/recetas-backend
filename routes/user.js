@@ -139,7 +139,6 @@ router.put('/', (req, res, next) => {
                 lastname: req.body.lastname,
                 username: req.body.username,
                 email: req.body.email,
-                type: req.body.type,
                 }
             },
             { new: true }, function (err, user) {
@@ -151,6 +150,32 @@ router.put('/', (req, res, next) => {
     else
     {
         res.status(403).send("Error. You must login.");
+    }
+});
+
+// Dar o Quitar permisos de administrador
+router.put('/permission', (req, res, next) => {
+    let token = jwt.decode(req.headers.authorization);
+    if (token !== null && token.userType === 1)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+
+        User.findOneAndUpdate({ _id: req.body._id }, 
+            { $set: { type: req.body.type } },
+            { new: true }, function (err, user) {
+                if (err)
+                    res.send(err);
+                res.json(user);
+            });
+    }
+    else
+    {
+        res.status(403).send("Error. You must be an administrator.");
     }
 });
 
