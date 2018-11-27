@@ -27,7 +27,6 @@ router.post('/', (req, res, next) => {
         report.save().then(function(){
             res.send("Report had been posted \n" + report);
         }, function(err){
-            console.log(String(err));
             res.send("The report has not been registered correctly");
         })
     }   

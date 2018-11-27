@@ -23,7 +23,6 @@ router.post('/', (req, res, next) => {
         .then(votation => {
             if (votation==null) 
             {
-                console.log('\n\nnueva\n\n');
                 let points = req.body.points;
                 let user = token.userID;
                 let recipe = req.body.recipe;
@@ -46,10 +45,8 @@ router.post('/', (req, res, next) => {
             }
             else
             {
-                console.log('\n\nact\n\n');
                 let id= votation._id;
                 let dif= req.body.points - votation.points;
-                console.log(req.body.points, ' - ',votation.points,' = ',dif);
                 Votation.findOneAndUpdate({ _id: id }, {points: req.body.points})
                 .then(votation2 => {
                     if (votation2)

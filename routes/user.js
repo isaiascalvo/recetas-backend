@@ -98,7 +98,6 @@ router.get('/email/:email', (req, res) => {
 
 //Buscar un usuario por usuario y contraseña
 router.post('/login', (req, res) => {
-    // console.log(req.body);
     User.findOne({email:req.body.email, password: req.body.password})
         .then(user => {
             if(!user) return res.sendStatus(401);

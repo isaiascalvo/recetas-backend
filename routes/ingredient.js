@@ -16,7 +16,6 @@ router.post('/', (req, res, next) => {
     ingredient.save().then(function(us){
         res.send("Ingredient had been posted \n" + ingredient);
     }, function(err){
-        console.log(String(err));
         res.send("The Ingredient has not been registered correctly");
     })
 });

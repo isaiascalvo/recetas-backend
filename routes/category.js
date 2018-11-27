@@ -26,7 +26,6 @@ router.post('/', (req, res, next) => {
         category.save().then(function(){
             res.send("Category had been posted \n" + category);
         }, function(err){
-            console.log(String(err));
             res.send("The category has not been registered correctly");
         })
     }
@@ -117,7 +116,6 @@ router.delete('/:id', (req, res, next) => {
             throw new Error('Token not yet valid');
         }
         Recipe.find({category:req.params.id},(err, recipes) => {
-            console.log(recipes.length);
             if(recipes.length === 0)
             {
                 Category.findByIdAndRemove(req.params.id, (err, category) => {

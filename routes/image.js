@@ -16,7 +16,6 @@ router.post('/', (req, res, next) => {
     image.save().then(function (us) {
         res.send("Image had been posted \n" + image);
     }, function (err) {
-        console.log(String(err));
         res.send("The image has not been registered correctly");
     })
 });
@@ -28,7 +27,6 @@ router.get('/', (req, res, next) => {
     Image.find({})
         .then(imagens => {
             if (!imagens) { return res.sendStatus(401); }
-            console.log(imagens);
             return res.json({ 'imagens': imagens })
         })
 });
