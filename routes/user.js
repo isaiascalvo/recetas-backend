@@ -96,6 +96,32 @@ router.get('/email/:email', (req, res) => {
         })
 });
 
+// Obtener recetas favoritas del usuario logueado
+router.get('/MyFavorites', (req, res) => {
+
+    let token = jwt.decode(req.headers.authorization);
+    if (token !== null && token.userID !== null)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+
+        User.findById(token.userID)
+        .populate( 'favorites' )
+        .then(user => {
+            if (!user) { return res.sendStatus(401); }
+            return res.json({favorites: user.favorites})
+        })
+    }
+    else
+    {
+        res.status(403).send("Error. You must login.");
+    }
+});
+
 //Buscar un usuario por usuario y contraseña
 router.post('/login', (req, res) => {
     User.findOne({email:req.body.email, password: req.body.password})
@@ -181,6 +207,62 @@ router.put('/permission', (req, res) => {
     else
     {
         res.status(403).send("Error. You must be an administrator.");
+    }
+});
+
+//Añadir una receta a favoritas
+router.put('/fav', (req, res) => {
+    let token = jwt.decode(req.headers.authorization);
+    if (token !== null && token.userID !== null)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+        User.findOneAndUpdate({ _id: token.userID }, 
+            {
+                $addToSet : {
+                    favorites: req.body.rec,
+                }
+            },
+            { new: true, returnNewDocument: true }, function (err, user) {
+                if (err)
+                    res.send(err);
+                    res.json({favorites: user.favorites});
+            });
+    }
+    else
+    {
+        res.status(403).send("Error. You must login.");
+    }
+});
+
+//Quitar una receta de favoritas
+router.put('/delFav', (req, res) => {
+    let token = jwt.decode(req.headers.authorization);
+    if (token !== null && token.userID !== null)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+        User.findOneAndUpdate({ _id: token.userID }, 
+            {
+                $pull: { favorites: req.body.rec },
+            },
+            { new: true, returnNewDocument: true}, function (err, user) {
+                if (err)
+                    res.send(err);
+                res.json({favorites: user.favorites});
+            });
+    }
+    else
+    {
+        res.status(403).send("Error. You must login.");
     }
 });
 
