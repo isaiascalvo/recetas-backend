@@ -22,7 +22,6 @@ router.post('/', (req, res, next) => {
 });
 
 //Listar todas los ingredientes de una receta y su cantidad
-//arreglar y no se si se usará
 router.get('/otro/:id', (req, res, next) => {
     ItemRecipe.find({recipe:req.params.id})
         .populate( 'ingredient' )
@@ -61,7 +60,6 @@ router.put('/:id', (req, res, next) => {
             res.send(err);
         res.json(itemRecipe);
     });
-    //res.send("ItemRecipes updated");
 });
 
 //Baja de itemRecipes indicando el id

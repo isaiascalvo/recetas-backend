@@ -1,5 +1,4 @@
 var mongoose = require('mongoose');
-//var moment = require('moment');
 
 var recipeSchema= new mongoose.Schema({
   name:{type:String, required:true},

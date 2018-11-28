@@ -69,7 +69,6 @@ router.post('/', (req, res, next) => {
 });
 
 //Listar todas las votaciones
-// no se si se usará
 router.get('/', (req, res, next) => {
     Votation.find({})
         .then(votations => {
@@ -79,7 +78,6 @@ router.get('/', (req, res, next) => {
 });
 
 //Listar una votación
-// no se si se usará
 router.get('/:id', (req, res, next) => {
     let id = req.params.id;
     Votation.findById(id)
@@ -114,18 +112,15 @@ router.get('/vote/:recipe', (req, res, next) => {
 });
 
 //Modificar votación
-//no se si usará
 router.put('/:id', (req, res, next) => {
     Votation.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, function (err, votation) {
         if (err)
             res.send(err);
         res.json(votation);
     });
-    //res.send("Votation updated");
 });
 
 //Baja de Votación indicando el id 
-//no se si usará
 router.delete('/:id', (req, res, next) => {
     Votation.findByIdAndRemove(req.params.id, (err, votation) => {
         let response = {

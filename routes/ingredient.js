@@ -41,10 +41,8 @@ router.get('/:id', (req, res, next) => {
 
 //Buscar un Ingrediente por nombre
 router.get('/byName/:name', (req, res, next) => {
-    //let name = req.params.name;
     Ingredient.findOne({name:req.params.name})
         .then(ingredient => {
-            //if (!ingredient) { return res.sendStatus(401); }
             return res.json({ 'ingredient': ingredient })
         })
 });
@@ -57,7 +55,6 @@ router.put('/:id', (req, res, next) => {
             res.send(err);
         res.json(ingredient);
     });
-    //res.send("Ingredient updated");
 });
 
 //Baja de Ingrediente indicando el id

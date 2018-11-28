@@ -69,7 +69,6 @@ router.get('/:id', (req, res, next) => {
 });
 
 //Buscar una Categoría por nombre
-//no creo que se use, pero lo dejo por las dudas
 router.get('/byName/:name', (req, res, next) => {
     let name = req.params.name;
     Category.findOne(name)
@@ -96,7 +95,6 @@ router.put('/:id', (req, res, next) => {
                 res.send(err);
             res.json(category);
         });
-        //res.send("Category updated");
     }   
     else
     {

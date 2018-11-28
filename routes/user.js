@@ -28,7 +28,6 @@ router.post('/', (req, res) => {
         type: type,
         
     });
-    //Puede haber error desde acá
     user.save().then(function(){
         res.json(user);
     }, function(err){
@@ -151,7 +150,6 @@ router.post('/isAdmin', (req, res, next) => {
 });
 
 //Modificar usuario
-//falta modificar recetas favoritas
 router.put('/', (req, res) => {
     let token = jwt.decode(req.headers.authorization);
     if (token !== null && token.userID !== null)

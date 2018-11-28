@@ -24,7 +24,7 @@ router.post('/', (req, res, next) => {
         let name = req.body.name;
         let time = req.body.time;
         let description = req.body.description;
-        let items = new Array();// = req.body.items;
+        let items = new Array();
         let preparation = req.body.preparation;
         let votes = 0;
         let punctuation = 0;
@@ -167,7 +167,6 @@ router.get('/CantRecipes/:creator', (req, res, next) => {
 });
 
 //Buscar Recetas por nombre
-//falta hacer
 router.get('/byName/:name', (req, res, next) => {
     Recipe.find({ name: { $regex: req.params.name }})
     .populate( 'creator' )
@@ -180,13 +179,12 @@ router.get('/byName/:name', (req, res, next) => {
 });
 
 //Buscar Recetas por nombre de categoría
-//falta hacer
 router.get('/byCategory/:category', (req, res, next) => {
     Category.findOne({name:req.params.category})
     .then(category => {
         if (!category) 
         { 
-            return res.sendStatus(401);//la categoría no se encontró 
+            return res.sendStatus(401);
         }
         else
         {
@@ -489,7 +487,6 @@ router.delete('/delAdm/:id', (req, res, next) => {
 function removeElement(array, elem) {
     array.forEach((ell,index) => {
         if (ell==elem) {
-            // modifies array in place
             array.splice(index,1);
           }
     });

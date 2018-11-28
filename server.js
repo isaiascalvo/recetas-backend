@@ -3,10 +3,6 @@ var mongoose = require('mongoose');
 var cors = require('cors');
 const bodyParser = require('body-parser');
 const expressJwt = require('express-jwt');
-//var moment = require('moment');
-
-
-//moment().format();
 
 var app = express();
 app.use(cors());
