@@ -168,7 +168,7 @@ router.get('/CantRecipes/:creator', (req, res, next) => {
 
 //Buscar Recetas por nombre
 router.get('/byName/:name', (req, res, next) => {
-    Recipe.find({ name: { $regex: req.params.name }})
+    Recipe.find({ name: { $regex: req.params.name, $options: 'i' }})
     .populate( 'creator' )
     .populate( 'category' )
     .populate( { path: 'items', populate: { path: 'ingredient'}})
