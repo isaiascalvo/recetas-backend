@@ -22,7 +22,7 @@ router.post('/', (req, res, next) => {
 
 //Listar todos los ingredientes
 router.get('/', (req, res, next) => {
-    Ingredient.find({})
+    Ingredient.find({}).sort( { name: 1 } )
         .then(ingredients => {
             if (!ingredients) { return res.sendStatus(401); }
             return res.json({ 'ingredients': ingredients })
