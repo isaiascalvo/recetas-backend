@@ -118,7 +118,7 @@ router.post('/', (req, res, next) => {
 
 //Listar todos las recetas
 router.get('/', (req, res, next) => {
-    Recipe.find({})
+    Recipe.find({}).sort({ name: 1 })
         .populate( 'creator' )
         .populate( 'category' )
         .populate( { path: 'items', populate: { path: 'ingredient'}})
@@ -143,7 +143,7 @@ router.get('/MyRecipes', (req, res, next) => {
             throw new Error('Token not yet valid');
         }
 
-        Recipe.find({creator:token.userID})
+        Recipe.find({ creator: token.userID }).sort({ name: 1 })
         .populate( 'creator' )
         .populate( 'category' )
         .populate( { path: 'items', populate: { path: 'ingredient'}})
