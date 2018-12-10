@@ -46,7 +46,7 @@ router.get('/', (req, res, next) => {
         if( Date.now() < token.nbf*1000) {
             throw new Error('Token not yet valid');
         }
-        User.find({})
+        User.find({}).sort({name:1})
         .populate( 'favorites' )
         .then(users => {
             if(!users) { return res.sendStatus(401); }
