@@ -14,7 +14,12 @@ var recipeSchema= new mongoose.Schema({
 },{timestamps:true});
 
 recipeSchema.virtual("Punctuation").get(function(){
-  return (this.punctuation/this.votes);
+  if (this.votes !== 0)
+  {
+    return (this.punctuation/this.votes);
+  } else {
+    return 0;
+  }
 });
 
 recipeSchema.set('toJSON', {getters: true, virtuals: true});

@@ -46,7 +46,36 @@ router.get('/', (req, res, next) => {
         if( Date.now() < token.nbf*1000) {
             throw new Error('Token not yet valid');
         }
-        User.find({})
+        User.find({}).sort({ lastname: 1, name: 1})
+        .populate( 'favorites' )
+        .then(users => {
+            if(!users) { return res.sendStatus(401); }
+            return res.json({ 'users': users });
+        })
+        .catch(next);
+    }
+    else
+    {
+        res.status(403).send("Error. You must be an administrator.");
+    }
+});
+
+//Listar todos los usuario paginados
+router.get('/GetrecipesByPage/:skip/:cant', (req, res, next) => {
+    let skip = parseInt(req.params.skip);
+    let cant = parseInt(req.params.cant);
+    let token = jwt.decode(req.headers.authorization);
+    if (token !== null && token.userType === 1)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+        User.find({}).sort({ lastname: 1, name: 1})
+        .skip(skip)
+        .limit(cant)
         .populate( 'favorites' )
         .then(users => {
             if(!users) { return res.sendStatus(401); }

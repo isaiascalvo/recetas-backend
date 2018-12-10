@@ -81,6 +81,56 @@ router.get('/', (req, res, next) => {
     }
 });
 
+
+//Listar todas las Denuncias
+router.get('/GetReportsByPage/:skip/:cant', (req, res, next) => {
+    let skip = parseInt(req.params.skip);
+    let cant = parseInt(req.params.cant);
+    let token = jwt.decode(req.headers.authorization);
+    if (token !== null && token.userID !== null)
+    {
+        if( Date.now() > token.exp*1000) {
+            throw new Error('Token has expired');
+        }
+        if( Date.now() < token.nbf*1000) {
+            throw new Error('Token not yet valid');
+        }
+        Report.aggregate(
+            [
+                { $group : {_id: "$recipe", recipe: {$first: '$recipe'}, count: { $sum: 1 } } },
+                { $sort : { count: -1 }},
+                {
+                    $lookup: {
+                        from: "recipes",
+                        localField: "recipe",
+                        foreignField: "_id",
+                        as: "recipe"
+                    }
+                },
+                {$unwind: "$recipe"},
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "recipe.creator",
+                        foreignField: "_id",
+                        as: "recipe.creator"
+                    }
+                }
+            ]
+        )
+        .skip(skip)
+        .limit(cant)
+        .then(reports => {
+            if (!reports) { return res.sendStatus(401); }
+            return res.json({ 'reports': reports })
+        })
+    }   
+    else 
+    {
+        res.status(403).send("Error. You must be an administrator.");
+    }
+});
+
 //Listar todas las Denuncias de una receta
 router.get('/RecipeReports/:recipe', (req, res, next) => {
     let token = jwt.decode(req.headers.authorization);
