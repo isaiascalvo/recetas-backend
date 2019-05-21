@@ -54,7 +54,8 @@ router.post('/', (req, res, next) => {
             req.body.items.forEach((it,index) => {
                 Ingredient.find({name:it})
                 .then(ingredient => {
-                    if (ingredient._id==null) 
+                    console.log(ingredient)
+                    if (ingredient[0]._id==null) 
                     { 
                         var ingre = new Ingredient({
                             name: it,
@@ -84,9 +85,10 @@ router.post('/', (req, res, next) => {
                     {
                         var itemRecipe = new ItemRecipe({
                             quantity: req.body.cants2[index],
-                            ingredient:ingredient._id,
+                            ingredient:ingredient[0]._id,
                             recipe: recipe,
                         });
+                        console.log(itemRecipe)
                         itemRecipe.save()
                         .then(ig =>{
                             Recipe.findOneAndUpdate(
