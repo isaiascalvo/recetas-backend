@@ -55,7 +55,7 @@ router.post('/', (req, res, next) => {
                 Ingredient.find({name:it})
                 .then(ingredient => {
                     console.log(ingredient)
-                    if (ingredient[0]._id==null) 
+                    if (ingredient[0]===undefined) 
                     { 
                         var ingre = new Ingredient({
                             name: it,
@@ -83,12 +83,14 @@ router.post('/', (req, res, next) => {
                     }
                     else
                     {
+                        console.log('\n\n\nelse\n\n\n')
+                        console.log(recipe._id,'\n')
                         var itemRecipe = new ItemRecipe({
                             quantity: req.body.cants2[index],
                             ingredient:ingredient[0]._id,
-                            recipe: recipe,
+                            recipe: recipe._id,
                         });
-                        console.log(itemRecipe)
+                        console.log('\n\n\n',itemRecipe,'\n\n\n')
                         itemRecipe.save()
                         .then(ig =>{
                             Recipe.findOneAndUpdate(
@@ -275,7 +277,7 @@ router.put('/:id', (req, res, next) => {
                 ingredientes.forEach(function(it,index) {
                     Ingredient.find({name:it})
                     .then(function(ingredient){
-                        if (ingredient.length===0) 
+                        if (ingredient.length===0) //  (ingredient === null) 
                         { 
                             var ingre = new Ingredient({
                                 name: it,
@@ -308,7 +310,7 @@ router.put('/:id', (req, res, next) => {
                         else
                         {
                             ItemRecipe.findOne({ingredient:ingredient[0]._id, recipe: id}).then(function(ite) {
-                                if(ite.length===0){
+                                if(ite===null){ //(ite.length===0){
                                     var itemRecipe = new ItemRecipe({
                                         quantity: req.body.cants2[index],
                                         ingredient:ingredient[0]._id,
@@ -321,7 +323,7 @@ router.put('/:id', (req, res, next) => {
                                                 _id: id
                                             }, {
                                             $addToSet : {
-                                                items:itemRecipe[0]._id
+                                                items:itemRecipe._id
                                                 }
                                             },
                                             { 
